@@ -1,0 +1,21 @@
+{
+  "name": "kuttit-bot",
+  "version": "1.0.0",
+  "description": "Kuttit URL shortner telegram bot",
+  "main": "index.js",
+  "repository": "https://github.com/Sparkenstein/kutt-bot",
+  "author": "Sparkenstein <Prabhanjan Padhye>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "micro-bot": "^2.5.3",
+    "supervisor": "^0.12.0"
+  },
+  "scripts": {
+    "dev": "supervisor -x micro-bot index.js",
+    "start": "micro-bot",
+    "now-start": "micro-bot -d ${NOW_URL}",
+    "lint": "eslint .",
+    "test": "npm run lint"
+  }
+}
