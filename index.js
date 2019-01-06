@@ -110,4 +110,14 @@ bot.command('getlist', async ctx => {
     }
 })
 
+bot.action('next', ctx => {
+    ctx.answerCbQuery(`getting 10 next`)
+})
+
+
+bot.action('next', ctx => {
+    ctx.answerCbQuery(`getting 10 prev`)
+})
+
+
 module.exports = bot
