@@ -1,7 +1,7 @@
 const { Composer, session, Markup, Extra } = require('micro-bot');
 
 const axios = require('axios')
-const { getUrls } = require('./api')
+const { getUrls, postUrl } = require('./api')
 
 const bot = new Composer()
 bot.use(session())
@@ -26,20 +26,12 @@ Then just send any valid http url to shorten the links`)
 })
 
 bot.hears(/^(http|https):\/\//, async (ctx) => {
-    const url = ctx.update.message.text;
+    const url = ctx.update.message.text
+    const apikey = ctx.session.apikey
     ctx.reply('fetching API please wait...')
-    if (ctx.session.apikey) {
+    if (apikey) {
         try {
-            const shortened = await axios({
-                method: 'POST',
-                url: 'https://kutt.it/api/url/submit',
-                headers: {
-                    'x-api-key': ctx.session.apikey
-                },
-                data: {
-                    target: url
-                }
-            })
+            const shortened = await axios(postUrl(apikey, url))
             ctx.reply(shortened.data.shortUrl);
         } catch (e) {
             console.log(e)
