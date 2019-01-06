@@ -1,7 +1,7 @@
 const { Composer, session, Markup, Extra } = require('micro-bot');
 
 const axios = require('axios')
-
+const { getUrls } = require('./api')
 
 const bot = new Composer()
 bot.use(session())
@@ -63,44 +63,31 @@ bot.command('setkey', ctx => {
 
 /**
  * Get request for fetch all the URLs. Accepts query params
- * isShortened: boolean <false>
  * count: int <10>
- * countAll: int <0>
  * page: int <1>
  * search: string <search string>
  */
 
 bot.command('getlist', async ctx => {
-    if (ctx.session.apikey) {
-        ctx.reply('getting list of all urls')
+    const apikey = ctx.session.apikey
+    ctx.session.currentPage = 1
+    if (apikey) {
         try {
-            const list = await axios({
-                method: 'GET',
-                url: 'https://kutt.it/api/url/geturls',
-                headers: {
-                    'x-api-key': ctx.session.apikey
-                }
-            })
+            const list = await axios(getUrls(apikey, 10, ctx.session.currentPage))
             // console.log("LIST", list.data.list)
-            const message = list.data.list.map(d =>  `${d.shortUrl} - [Original Link](${d.target})\n`)
-            console.log(message.join('\n'));
+            const message = list.data.list.map(d =>  `${d.shortUrl} - [Original](${d.target})\n`)
             ctx.reply('Total links found:' + list.data.countAll)
-            ctx.replyWithMarkdown('Test', Extra
-                .load({ caption: 'Caption' })
+            const reply = message.join('\n')
+            ctx.replyWithMarkdown(reply, Extra
+                // .load({ caption: reply})
                 .markdown()
                 .markup(m => 
                     m.inlineKeyboard([
-                        m.callbackButton('← Prev', 'Prev'),
-                        m.callbackButton('Next →', 'next')
+                        m.callbackButton('← Prev 10', 'prev'),
+                        m.callbackButton('Next 10 →', 'next')
                     ])
                     )
                 )
-            // ctx.replyWithMarkdown(message, Markup
-            //     .keyboard(['<- Prev 10', 'Next 10 ->'])
-            //     .oneTime()
-            //     .resize()
-            //     .extra()
-            // )
         } catch (e) {
             console.error(e)
             ctx.reply(e.response.statusText)
@@ -115,7 +102,7 @@ bot.action('next', ctx => {
 })
 
 
-bot.action('next', ctx => {
+bot.action('prev', ctx => {
     ctx.answerCbQuery(`getting 10 prev`)
 })
 
