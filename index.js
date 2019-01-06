@@ -1,4 +1,4 @@
-const { Composer, session } = require('micro-bot');
+const { Composer, session, Markup, Extra } = require('micro-bot');
 
 const axios = require('axios')
 
@@ -51,8 +51,63 @@ bot.hears(/^(http|https):\/\//, async (ctx) => {
 })
 
 bot.command('setkey', ctx => {
-    ctx.reply('overriding old API key if present.')
-    ctx.session.apikey = ctx.update.message.text.split(' ')[1]
-    ctx.reply('new api key is set 👍')
+    const newkey = ctx.update.message.text.split(' ')[1];
+    if(newkey){
+        ctx.reply('overriding old API key if present.')
+        ctx.session.apikey = ctx.update.message.text.split(' ')[1]
+        ctx.reply('new api key is set 👍')
+    } else {
+        ctx.reply('Send the key with format /setkey {new-api-key}')
+    }
 })
+
+/**
+ * Get request for fetch all the URLs. Accepts query params
+ * isShortened: boolean <false>
+ * count: int <10>
+ * countAll: int <0>
+ * page: int <1>
+ * search: string <search string>
+ */
+
+bot.command('getlist', async ctx => {
+    if (ctx.session.apikey) {
+        ctx.reply('getting list of all urls')
+        try {
+            const list = await axios({
+                method: 'GET',
+                url: 'https://kutt.it/api/url/geturls',
+                headers: {
+                    'x-api-key': ctx.session.apikey
+                }
+            })
+            // console.log("LIST", list.data.list)
+            const message = list.data.list.map(d =>  `${d.shortUrl} - [Original Link](${d.target})\n`)
+            console.log(message.join('\n'));
+            ctx.reply('Total links found:' + list.data.countAll)
+            ctx.replyWithMarkdown('Test', Extra
+                .load({ caption: 'Caption' })
+                .markdown()
+                .markup(m => 
+                    m.inlineKeyboard([
+                        m.callbackButton('← Prev', 'Prev'),
+                        m.callbackButton('Next →', 'next')
+                    ])
+                    )
+                )
+            // ctx.replyWithMarkdown(message, Markup
+            //     .keyboard(['<- Prev 10', 'Next 10 ->'])
+            //     .oneTime()
+            //     .resize()
+            //     .extra()
+            // )
+        } catch (e) {
+            console.error(e)
+            ctx.reply(e.response.statusText)
+        }
+    } else {
+        ctx.reply('API key is not set, please set one with /setkey command')
+    }
+})
+
 module.exports = bot
