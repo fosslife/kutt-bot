@@ -7,7 +7,7 @@
   "author": "Sparkenstein <Prabhanjan Padhye>",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "micro-bot": "^2.5.3",
     "supervisor": "^0.12.0"
   },
